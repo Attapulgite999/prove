@@ -1,0 +1,43 @@
+# Ambiente virtuale Python
+.venv/
+venv/
+env/
+ENV/
+
+# File di sistema
+.DS_Store
+Thumbs.db
+
+# File temporanei
+*.tmp
+*.temp
+*.log
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+
+# File di configurazione locali
+config.local.json
+training_config.local.yaml
+
+# Output del training
+output/
+runs/
+checkpoints/
+
+# Dataset scaricati (opzionale, se vuoi tenerli locali)
+# data/
+# llama_factory_data/data/
+
+# File di log
+logs/
+*.log

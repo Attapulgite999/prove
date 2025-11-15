@@ -1,0 +1,162 @@
+[
+  {
+    "instruction": "Spiega ## 1.1 Panoramica Hardware/Software",
+    "input": "",
+    "output": "Il sistema è progettato per operare su GPU AMD RX 6650 XT con 8GB GDDR6, utilizzando ROCm 6.2 con workaround per l'architettura gfx1032 non ufficialmente supportata. L'architettura implementa un pipeline di fine-tuning memory-efficient che utilizza tecniche avanzate di quantizzazione e ottimizzazione.\n\n```mermaid\ngraph TD\n    A[AMD RX 6650 XT 8GB] --> B[ROCm 6.2 + PyTorch]\n    B --> C[LLaMA Factory]\n    C --> D[Qwen3-VL-8B-Instruct 4-bit]\n    D --> E[LoRA Adapter]\n    E --> F[MedAlpaca Dataset]\n    \n    subgraph \"Memory Optimization Layer\"\n        G[Gradient Checkpointing]\n        H[4-bit Quantization]\n        I[LoRA Low-Rank Adaptation]\n        J[Batch Size = 1]\n    end\n    \n    C --> G\n    C --> H\n    C --> I\n    C --> J\n```"
+  },
+  {
+    "instruction": "Spiega ## 1.2 Flusso Dati",
+    "input": "",
+    "output": "```mermaid\ngraph LR\n    A[MedAlpaca Dataset] --> B[Preprocessing]\n    B --> C[Tokenization]\n    C --> D[4-bit Quantization]\n    D --> E[LoRA Training]\n    E --> F[Checkpoint Saving]\n    F --> G[Model Export]\n    G --> H[Inference Testing]\n```"
+  },
+  {
+    "instruction": "Spiega ## 2.1 AMD RX 6650 XT Specifications",
+    "input": "",
+    "output": "- **Architettura**: RDNA 2 (gfx1032 - Navi 23)\n- **VRAM**: 8GB GDDR6\n- **Memory Bus**: 128-bit\n- **Bandwidth**: 280 GB/s\n- **TDP**: 180W\n- **Stream Processors**: 2048"
+  },
+  {
+    "instruction": "Spiega ## 2.2 ROCm Workaround Configuration",
+    "input": "",
+    "output": "```bash"
+  },
+  {
+    "instruction": "Spiega Variabili ambiente essenziali per gfx1032",
+    "input": "",
+    "output": "export HSA_OVERRIDE_GFX_VERSION=10.3.0\nexport ROCM_PATH=/opt/rocm\nexport HIP_VISIBLE_DEVICES=0\nexport PYTORCH_HIP_ALLOC_CONF=garbage_collection_threshold:0.8,max_split_size_mb:512\n```"
+  },
+  {
+    "instruction": "Spiega ## 2.3 Limitazioni Memoria e Strategie",
+    "input": "",
+    "output": "- **VRAM Totale**: 8192MB\n- **Memoria disponibile per training**: ~6.5GB (riservando 1.5GB per sistema)\n- **Strategie di ottimizzazione**:\n  - Quantizzazione 4-bit (riduzione 75% memoria)\n  - Gradient checkpointing (50% riduzione attivazioni)\n  - LoRA rank=8-16 (parametri trainabili <1%)\n  - Batch size=1 con accumulation=8"
+  },
+  {
+    "instruction": "Spiega ## 3.1 Core Dependencies",
+    "input": "",
+    "output": "```yaml"
+  },
+  {
+    "instruction": "Spiega requirements.txt",
+    "input": "",
+    "output": "rocm-libs==6.2.0\npytorch-rocm==2.1.0\ntransformers>=4.40.0\nbitsandbytes-rocm>=0.41.0\npeft>=0.10.0\ndatasets>=2.14.0\nllama-factory>=0.8.0\naccelerate>=0.27.0\ndeepspeed>=0.12.0\n```"
+  },
+  {
+    "instruction": "Spiega ## 3.2 ROCm Installation Script",
+    "input": "",
+    "output": "```bash"
+  },
+  {
+    "instruction": "Spiega install_rocm.sh",
+    "input": "",
+    "output": "wget -q -O - https://repo.radeon.com/rocm/rocm.gpg.key | sudo apt-key add -\necho 'deb [arch=amd64] https://repo.radeon.com/rocm/apt/6.2 ubuntu main' | sudo tee /etc/apt/sources.list.d/rocm.list\nsudo apt update\nsudo apt install rocm-dev hipblas miopen-hip hipfft rocrand hipsparse\n```"
+  },
+  {
+    "instruction": "Spiega ## 4.1 Quantizzazione 4-bit Implementation",
+    "input": "",
+    "output": "```python"
+  },
+  {
+    "instruction": "Spiega Configurazione BitsAndBytes per ROCm",
+    "input": "",
+    "output": "bnb_config = BitsAndBytesConfig(\n    load_in_4bit=True,\n    bnb_4bit_compute_dtype=torch.float16,\n    bnb_4bit_use_double_quant=True,\n    bnb_4bit_quant_type=\"nf4\"\n)\n```"
+  },
+  {
+    "instruction": "Spiega ## 4.2 LoRA Configuration",
+    "input": "",
+    "output": "```python\nlora_config = LoraConfig(\n    r=16,  # Low rank per ottimizzazione memoria\n    lora_alpha=32,\n    target_modules=[\"q_proj\", \"v_proj\", \"k_proj\", \"o_proj\", \"gate_proj\", \"up_proj\", \"down_proj\"],\n    lora_dropout=0.1,\n    bias=\"none\",\n    task_type=\"CAUSAL_LM\"\n)\n```"
+  },
+  {
+    "instruction": "Spiega ## 4.3 Memory Monitoring",
+    "input": "",
+    "output": "```python\nclass MemoryMonitor:\n    def __init__(self):\n        self.initial_memory = self.get_gpu_memory()\n    \n    def get_gpu_memory(self):\n        return torch.cuda.memory_allocated() / 1024**3  # GB\n    \n    def log_memory_usage(self, stage: str):\n        current = self.get_gpu_memory()\n        logging.info(f\"[{stage}] GPU Memory: {current:.2f}GB / 8.0GB ({current/8*100:.1f}%)\")\n```"
+  },
+  {
+    "instruction": "Spiega ## 5.1 Preprocessing MedAlpaca",
+    "input": "",
+    "output": "```python\ndef preprocess_medalpaca(dataset_path: str) -> List[Dict]:\n    \"\"\"\n    Converte MedAlpaca in formato alpaca standard\n    \"\"\"\n    dataset = load_dataset(\"medalpaca/medical_meadow_medqa\")\n    \n    formatted_data = []\n    for item in dataset['train']:\n        formatted_item = {\n            \"instruction\": item['question'],\n            \"input\": \"\",\n            \"output\": item['answer']\n        }\n        formatted_data.append(formatted_item)\n    \n    return formatted_data\n```"
+  },
+  {
+    "instruction": "Spiega ## 5.2 Training Loop con Error Handling",
+    "input": "",
+    "output": "```python\ndef train_with_oom_recovery(model, train_dataloader, optimizer, num_epochs):\n    \"\"\"\n    Training loop con gestione automatica OOM errors\n    \"\"\"\n    for epoch in range(num_epochs):\n        try:\n            train_epoch(model, train_dataloader, optimizer)\n        except RuntimeError as e:\n            if \"out of memory\" in str(e):\n                torch.cuda.empty_cache()\n                # Riduci batch size o aumenta gradient accumulation\n                adjust_training_params()\n                continue\n            else:\n                raise e\n```"
+  },
+  {
+    "instruction": "Spiega ## 6.1 Script di Setup Ambiente (`setup_environment.py`)",
+    "input": "",
+    "output": "```python\nimport subprocess\nimport os\nimport logging\nfrom typing import Dict, List\n\nclass EnvironmentSetup:\n    def __init__(self):\n        self.rocm_version = \"6.2\"\n        self.required_packages = [\n            \"torch\", \"transformers\", \"bitsandbytes\", \n            \"peft\", \"datasets\", \"accelerate\", \"llama-factory\"\n        ]\n    \n    def verify_rocm_installation(self) -> bool:\n        \"\"\"Verifica che ROCm sia installato e funzionante\"\"\"\n        try:\n            result = subprocess.run(['rocminfo'], capture_output=True, text=True)\n            return result.returncode == 0\n        except FileNotFoundError:\n            return False\n    \n    def setup_gpu_workaround(self):\n        \"\"\"Configura workaround per RX 6650 XT\"\"\"\n        os.environ['HSA_OVERRIDE_GFX_VERSION'] = '10.3.0'\n        os.environ['ROCM_PATH'] = '/opt/rocm'\n        logging.info(\"Configurato workaround ROCm per RX 6650 XT\")\n```"
+  },
+  {
+    "instruction": "Spiega ## 6.2 Dataset Configuration (`configure_dataset.py`)",
+    "input": "",
+    "output": "```python\ndef create_dataset_info():\n    \"\"\"\n    Crea configurazione dataset per LLaMA Factory\n    \"\"\"\n    dataset_info = {\n        \"medalpaca\": {\n            \"file_name\": \"medalpaca.json\",\n            \"columns\": {\n                \"prompt\": \"instruction\",\n                \"query\": \"input\",\n                \"response\": \"output\"\n            }\n        }\n    }\n    \n    with open(\"data/dataset_info.json\", \"w\") as f:\n        json.dump(dataset_info, f, indent=2)\n```"
+  },
+  {
+    "instruction": "Spiega ## 7.1 Training Configuration (`training_config.yaml`)",
+    "input": "",
+    "output": "```yaml\nmodel_name_or_path: Qwen/Qwen3-VL-8B-Instruct\nmodel_revision: main"
+  },
+  {
+    "instruction": "Spiega Quantizzazione e ottimizzazione memoria",
+    "input": "",
+    "output": "quantization_bit: 4\nquantization_type: nf4\ndouble_quantization: true\ngpu_memory_fraction: 0.85"
+  },
+  {
+    "instruction": "Spiega LoRA configuration",
+    "input": "",
+    "output": "lora_rank: 16\nlora_alpha: 32\nlora_dropout: 0.1\nlora_target: [\"q_proj\", \"v_proj\", \"k_proj\", \"o_proj\", \"gate_proj\", \"up_proj\", \"down_proj\"]"
+  },
+  {
+    "instruction": "Spiega Training parameters",
+    "input": "",
+    "output": "per_device_train_batch_size: 1\ngradient_accumulation_steps: 8\nlearning_rate: 3.0e-5\nnum_train_epochs: 2\nmax_grad_norm: 1.0\nlr_scheduler_type: cosine\nwarmup_ratio: 0.1"
+  },
+  {
+    "instruction": "Spiega Memory optimization",
+    "input": "",
+    "output": "gpu_memory_limit: 6.5GB\ngradient_checkpointing: true\nuse_unsloth: true\nenable_liger_kernel: true"
+  },
+  {
+    "instruction": "Spiega Logging and checkpointing",
+    "input": "",
+    "output": "logging_steps: 10\nsave_steps: 100\nsave_total_limit: 3\noutput_dir: ./medical_qwen3_output\n```"
+  },
+  {
+    "instruction": "Spiega ## 8.1 Problemi Comuni ROCm su GPU non Ufficiali",
+    "input": "",
+    "output": "**Problema**: `hipErrorNoBinaryForGpu`\n**Soluzione**: \n```bash\nexport HSA_OVERRIDE_GFX_VERSION=10.3.0\nexport AMDGPU_TARGETS=gfx1032\n```\n\n**Problema**: Memory access violations\n**Soluzione**:\n```bash\nexport HSA_DISABLE_CACHE=1\nexport PYTORCH_HIP_ALLOC_CONF=expandable_segments:True\n```"
+  },
+  {
+    "instruction": "Spiega ## 8.2 OOM Error Handling",
+    "input": "",
+    "output": "```python\ndef handle_oom_error(func):\n    \"\"\"Decorator per gestione automatica OOM\"\"\"\n    def wrapper(*args, **kwargs):\n        try:\n            return func(*args, **kwargs)\n        except RuntimeError as e:\n            if \"out of memory\" in str(e):\n                torch.cuda.empty_cache()\n                gc.collect()\n                # Implementa strategia di recovery\n                return retry_with_reduced_batch_size(func, *args, **kwargs)\n            raise e\n    return wrapper\n```"
+  },
+  {
+    "instruction": "Spiega ## 8.3 Performance Tuning",
+    "input": "",
+    "output": "- **Monitoraggio temperatura**: RX 6650 XT opera ottimamente <85°C\n- **Power limit**: Considera undervolting per stabilità\n- **Memory clock**: Riduci se si verificano errori memoria\n- **Validation frequenti**: Salva checkpoint ogni 100 steps"
+  },
+  {
+    "instruction": "Spiega ## 8.4 Sicurezza e Validation",
+    "input": "",
+    "output": "```python\ndef validate_model_output(model, test_questions: List[str]) -> Dict:\n    \"\"\"\n    Valida output del modello medico\n    \"\"\"\n    results = {}\n    for question in test_questions:\n        response = generate_response(model, question)\n        results[question] = {\n            \"response\": response,\n            \"length\": len(response),\n            \"medical_keywords\": extract_medical_terms(response),\n            \"safety_score\": check_medical_safety(response)\n        }\n    return results\n```"
+  },
+  {
+    "instruction": "Spiega ## 9.1 Metriche di Performance",
+    "input": "",
+    "output": "- **Training time per epoch**: Target <2 ore\n- **Memory usage**: <6.5GB durante training\n- **Inference speed**: >10 tokens/sec\n- **Model quality**: BLEU score >0.7 su test set"
+  },
+  {
+    "instruction": "Spiega ## 9.2 Stress Testing",
+    "input": "",
+    "output": "```python\ndef stress_test_memory(model, duration_minutes=30):\n    \"\"\"\n    Test di stress per verificare stabilità memoria\n    \"\"\"\n    start_time = time.time()\n    while (time.time() - start_time) < duration_minutes * 60:\n        # Esegui inference batch\n        batch = generate_test_batch()\n        with torch.cuda.amp.autocast():\n            outputs = model(batch)\n        \n        # Monitora memoria\n        if torch.cuda.memory_allocated() > 6.5 * 1024**3:\n            raise MemoryError(\"Memory usage exceeded limit\")\n        \n        torch.cuda.empty_cache()\n```"
+  },
+  {
+    "instruction": "Spiega ## 10.1 Model Export Formats",
+    "input": "",
+    "output": "- **Merged Model**: Modello completo con LoRA integrato\n- **Adapter Only**: Solo pesi LoRA (più piccolo)\n- **ONNX Format**: Per deployment ottimizzato"
+  },
+  {
+    "instruction": "Spiega ## 10.2 Hugging Face Hub Upload",
+    "input": "",
+    "output": "```python\ndef upload_to_hub(model_path: str, repo_name: str):\n    \"\"\"\n    Carica modello fine-tunato su Hugging Face\n    \"\"\"\n    api = HfApi()\n    api.upload_folder(\n        folder_path=model_path,\n        repo_id=repo_name,\n        repo_type=\"model\"\n    )\n```\n\nQuesta architettura fornisce una base solida per l'implementazione del sistema di fine-tuning, con particolare attenzione alle ottimizzazioni per hardware AMD non ufficialmente supportato e gestione efficiente della memoria limitata."
+  }
+]
