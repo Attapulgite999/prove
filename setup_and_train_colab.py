@@ -89,13 +89,14 @@ def setup_llama_factory():
     logger.info("Installazione LLaMA Factory (modalità editable)...")
     subprocess.run([sys.executable, "-m", "pip", "install", "-e", LLAMA_FACTORY_PATH], check=True)
 
-    import importlib.metadata
-    try:
-        importlib.metadata.version("unsloth")
-        logger.info("unsloth rilevato.")
-    except importlib.metadata.PackageNotFoundError:
-        logger.info("Installazione unsloth...")
-        subprocess.run([sys.executable, "-m", "pip", "install", "-U", "unsloth"], check=True)
+    # Disabilitato unsloth per evitare conflitti di dipendenza
+    # import importlib.metadata
+    # try:
+    #     importlib.metadata.version("unsloth")
+    #     logger.info("unsloth rilevato.")
+    # except importlib.metadata.PackageNotFoundError:
+    #     logger.info("Installazione unsloth...")
+    #     subprocess.run([sys.executable, "-m", "pip", "install", "-U", "unsloth"], check=True)
 
     logger.info("LLaMA Factory installato con successo.")
 
