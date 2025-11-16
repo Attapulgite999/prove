@@ -3,6 +3,12 @@
 ## Stato attuale
 Il progetto è in fase attiva di sviluppo per l'addestramento e l'ottimizzazione del modello Qwen3 utilizzando LLaMA Factory. Sono stati creati diversi script di setup e addestramento (setup_and_train.py, setup_and_train_gguf.py, setup_and_train_final.py, setup_and_train_simple.py, setup_and_train_colab.py). Il repository LLaMA Factory è stato integrato nella cartella llama_factory_data/. Sono stati risolti problemi di compatibilità con Windows passando a Google Colab per l'addestramento GPU. È stato risolto il problema di importazione del modulo 'llamafactory' nello script setup_and_train_colab.py, correggendo il percorso e il metodo di esecuzione del training. Sono stati implementati i suggerimenti di Google Gemini per ottimizzare i parametri di addestramento, inclusi cutoff_len, max_samples, fp16, torch_empty_cache_steps, e la gestione della conversione LoRA-GGUF. Nello script `setup_and_train_colab.py`, il modello `Qwen/Qwen3-VL-8B-Instruct` è stato sostituito con `Qwen/Qwen2.5-7B-Instruct` per ottimizzare l'addestramento per applicazioni mediche e per rimuovere la necessità di un token Hugging Face.
 
+**RISOLTO (16/11/2025)**: È stato corretto il problema di installazione di LLaMA Factory in ambiente Colab. Il repository GitHub pubblico non includeva correttamente il sottomodulo LLaMA Factory, causando errori durante `pip install -e`. È stata modificata la funzione `setup_llama_factory()` per verificare la presenza dei file necessari (`setup.py` o `pyproject.toml`) e riclonare il repository se incompleto.
+
+**RISOLTO (16/11/2025)**: È stato risolto il problema della cache di Google Colab che impediva il caricamento delle versioni aggiornate del codice. È stato modificato il notebook `colab.ipynb` per forzare sempre una clonazione fresca del repository rimuovendo prima la directory esistente.
+
+**RISOLTO (16/11/2025)**: È stato risolto il problema di incompatibilità della libreria `trl`. È stata aggiunta la dipendenza `trl>=0.8.6,<=0.9.6` al file `requirements.txt` per garantire la compatibilità con LLaMA Factory.
+
 È stato creato il notebook Jupyter `colab.ipynb` ottimizzato per l'esecuzione su Google Colab, che include:
 - Verifica automatica della connessione internet, GPU, RAM e CPU
 - Montaggio automatico di Google Drive per il salvataggio dei risultati

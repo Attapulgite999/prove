@@ -102,6 +102,7 @@ def setup_llama_factory():
 def ensure_dependencies():
     """Installa le dipendenze necessarie."""
     subprocess.run([sys.executable, "-m", "pip", "install", "datasets>=2.16.0,<=4.0.0"], check=True)
+    subprocess.run([sys.executable, "-m", "pip", "install", "trl>=0.8.6,<=0.9.6"], check=True)
     subprocess.run([sys.executable, "-m", "pip", "install", "-U", "bitsandbytes"], check=True)
     try:
         import pynvml
@@ -148,8 +149,9 @@ def create_training_config():
         "lora_alpha": 16,
         "lora_dropout": 0.05,
         "dataset": "medalpaca",
-        "template": "qwen",
-        "cutoff_len": 512,
+        "template": "qwen2_5",
+        "tokenizer_name_or_path": "Qwen/Qwen2.5-7B-Instruct",
+        "cutoff_len": 256,
         "max_samples": 500,
         "overwrite_cache": True,
         "preprocessing_num_workers": 2,
@@ -263,6 +265,11 @@ def run_training_with_retry(config_path, output_dir, max_retries=3):
 
             env = os.environ.copy()
             env['PYTHONPATH'] = str(Path(LLAMA_FACTORY_PATH).resolve()) + os.pathsep + env.get('PYTHONPATH', '')
+            env['PYTORCH_ALLOC_CONF'] = 'expandable_segments:True'
+            env['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
+            env['TOKENIZERS_PARALLELISM'] = 'false'
+            env['HF_DATASETS_DOWNLOAD_NUM_WORKERS'] = '1'
+            env['HF_DATASETS_DOWNLOAD_NUM_PROC'] = '1'
 
             train_cmd = [
                 sys.executable, "-m", "llamafactory.cli", "train", config_path
