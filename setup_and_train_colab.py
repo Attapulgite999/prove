@@ -68,11 +68,23 @@ def clear_gpu_memory():
 def setup_llama_factory():
     """Clona e installa LLaMA Factory."""
     logger.info("Setup LLaMA Factory...")
-    if not Path(LLAMA_FACTORY_PATH).exists():
-        logger.info("Clonazione LLaMA Factory...")
-        subprocess.run(["git", "clone", "https://github.com/hiyouga/LLaMA-Factory.git", LLAMA_FACTORY_PATH], check=True)
 
-    sys.path.insert(0, str(Path(LLAMA_FACTORY_PATH).resolve()))
+    # Verifica se la directory esiste e contiene i file necessari per l'installazione
+    llama_factory_dir = Path(LLAMA_FACTORY_PATH)
+    setup_py = llama_factory_dir / "setup.py"
+    pyproject_toml = llama_factory_dir / "pyproject.toml"
+
+    if not llama_factory_dir.exists() or not (setup_py.exists() or pyproject_toml.exists()):
+        logger.info("LLaMA Factory non trovato o incompleto. Clonazione da GitHub...")
+        if llama_factory_dir.exists():
+            logger.info("Rimozione directory esistente incompleta...")
+            import shutil
+            shutil.rmtree(llama_factory_dir)
+        subprocess.run(["git", "clone", "https://github.com/hiyouga/LLaMA-Factory.git", LLAMA_FACTORY_PATH], check=True)
+    else:
+        logger.info("LLaMA Factory già presente e valido.")
+
+    sys.path.insert(0, str(llama_factory_dir.resolve()))
 
     logger.info("Installazione LLaMA Factory (modalità editable)...")
     subprocess.run([sys.executable, "-m", "pip", "install", "-e", LLAMA_FACTORY_PATH], check=True)
