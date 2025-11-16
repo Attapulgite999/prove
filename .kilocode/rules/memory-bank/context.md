@@ -9,6 +9,12 @@ Il progetto è in fase attiva di sviluppo per l'addestramento e l'ottimizzazione
 
 **RISOLTO (16/11/2025)**: È stato risolto il problema di incompatibilità della libreria `trl`. È stata aggiunta la dipendenza `trl>=0.8.6,<=0.9.6` al file `requirements.txt` per garantire la compatibilità con LLaMA Factory.
 
+**RISOLTO (16/11/2025)**: È stato risolto definitivamente l'ImportError di `PreTrainedModel` tra `peft` e `transformers`. È stato modificato il file `requirements.txt` di LLaMA Factory per specificare versioni compatibili: `transformers>=4.40.0,<4.45.0` e `peft>=0.10.0,<0.12.0`, garantendo che LLaMA Factory installi automaticamente le versioni corrette delle sue dipendenze.
+
+**RISOLTO (16/11/2025)**: È stato disabilitato l'uso di `unsloth` per evitare conflitti di dipendenza con `llamafactory`. La libreria `unsloth` è stata commentata nel codice di installazione e il parametro `use_unsloth` è impostato su `False` nella configurazione del training.
+
+**RISOLTO (16/11/2025)**: È stato aggiunto un comando di disinstallazione esplicita di `unsloth` e `unsloth-zoo` nel notebook Colab prima dell'installazione delle dipendenze, per eliminare definitivamente i conflitti di versione che impedivano l'avvio del training.
+
 È stato creato il notebook Jupyter `colab.ipynb` ottimizzato per l'esecuzione su Google Colab, che include:
 - Verifica automatica della connessione internet, GPU, RAM e CPU
 - Montaggio automatico di Google Drive per il salvataggio dei risultati
