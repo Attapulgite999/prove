@@ -1,0 +1,10 @@
+{
+  "medalpaca": {
+    "file_name": "medalpaca.json",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output"
+    }
+  }
+}
