@@ -15,6 +15,12 @@ Il progetto è in fase attiva di sviluppo per l'addestramento e l'ottimizzazione
 
 **RISOLTO (16/11/2025)**: È stato aggiunto un comando di disinstallazione esplicita di `unsloth` e `unsloth-zoo` nel notebook Colab prima dell'installazione delle dipendenze, per eliminare definitivamente i conflitti di versione che impedivano l'avvio del training.
 
+**RISOLTO (16/11/2025)**: È stato risolto definitivamente il conflitto di dipendenze modificando direttamente il file `requirements.txt` di LLaMA Factory per specificare versioni compatibili di `peft` e `transformers`, garantendo che il framework installi automaticamente le versioni corrette senza conflitti.
+
+**RISOLTO (16/11/2025)**: È stato corretto un errore di sintassi nel file `requirements.txt` di LLaMA Factory che causava l'errore "Invalid requirement", rimuovendo una riga mal formattata.
+
+**RISOLTO (17/11/2025)**: È stato risolto l'errore ModuleNotFoundError: No module named 'torchvision' durante l'esecuzione di accelerate launch aggiungendo l'installazione esplicita di timm nel notebook Colab.
+
 È stato creato il notebook Jupyter `colab.ipynb` ottimizzato per l'esecuzione su Google Colab, che include:
 - Verifica automatica della connessione internet, GPU, RAM e CPU
 - Montaggio automatico di Google Drive per il salvataggio dei risultati
@@ -25,7 +31,24 @@ Il progetto è in fase attiva di sviluppo per l'addestramento e l'ottimizzazione
 - Documentazione integrata con spiegazioni dettagliate di ogni passo
 
 ## Focus di lavoro
-L'obiettivo attuale è completare l'implementazione degli script di addestramento e ottimizzazione per il modello Qwen3, con particolare attenzione all'esecuzione su Google Colab. Sono disponibili diversi approcci:
+Dopo aver riscontrato problemi di stabilità con LLaMA Factory dovuti a conflitti di dipendenza, è stato creato un nuovo progetto basato su **Axolotl**, un framework più robusto per il fine-tuning di modelli linguistici.
+
+### Nuovo Progetto Axolotl
+- **Directory**: `axolotl_training/`
+- **Framework**: Axolotl (più stabile di LLaMA Factory)
+- **Modello**: Qwen/Qwen2.5-7B-Instruct
+- **Tecnica**: LoRA fine-tuning
+- **Dataset**: Dati medici (medalpaca)
+- **Output**: Modello ottimizzato + GGUF per LM Studio
+
+### File del Progetto
+- `axolotl_training/colab_axolotl.ipynb`: Notebook Colab principale
+- `axolotl_training/config/qwen_axolotl.yaml`: Configurazione YAML per Axolotl
+- `axolotl_training/data/`: Dataset di training
+- `axolotl_training/README.md`: Guida all'utilizzo
+
+### Script Legacy (LLaMA Factory)
+I precedenti script rimangono disponibili per riferimento:
 - setup_and_train.py: Script principale per l'addestramento (Windows)
 - setup_and_train_gguf.py: Script per l'ottimizzazione GGUF
 - setup_and_train_final.py: Versione finale dell'implementazione
