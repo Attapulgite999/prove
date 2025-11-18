@@ -21,6 +21,8 @@ Il progetto è in fase attiva di sviluppo per l'addestramento e l'ottimizzazione
 
 **RISOLTO (17/11/2025)**: È stato risolto l'errore ModuleNotFoundError: No module named 'torchvision' durante l'esecuzione di accelerate launch aggiungendo l'installazione esplicita di timm nel notebook Colab.
 
+**RISOLTO (18/11/2025)**: Sono state aggiunte le dipendenze mancanti per Axolotl nel notebook Colab per risolvere l'errore ModuleNotFoundError: No module named 'colorama'.
+
 È stato creato il notebook Jupyter `colab.ipynb` ottimizzato per l'esecuzione su Google Colab, che include:
 - Verifica automatica della connessione internet, GPU, RAM e CPU
 - Montaggio automatico di Google Drive per il salvataggio dei risultati
